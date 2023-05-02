@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>{{signup}}&#x2022TicketShow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+
+    <style>
+      #title_card {
+        position: static;
+        text-align: center;
+        margin-top:3%;
+        font-weight:200;
+      }
+
+      .form {
+        border-radius: 25px;
+        background: #73AD21;
+        padding: 20px; 
+        width: 200px;
+        height: 150px;  
+      }
+      
+      @media (orientation: landscape){
+        #login {
+          position: absolute;
+          left: 35%;
+          right: 35%;
+          margin: auto;  
+        }
+      }
+
+      @media (orientation: portrait){
+        #login {
+          position: absolute;
+          left: 35px;
+          right: 35px;
+          margin: auto;  
+        }
+      }
+        
+    </style>
+  </head>
+  <body>
+    <nav class="navbar" style="background-color: #111417; border-bottom: 1px solid #303539;" >
+      <div class="container-fluid">
+        <ul class="navbar justify-content-start">
+          <li>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:10px; top:10px; padding:0px; margin:0px; color:white;" href="{{url_for('front_page')}}">
+              <img src="{{ url_for('static', filename='ticket-48.png') }}" width="40" height="40" style="border-width:0px;"></img>
+            </a>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:53px; top:22px; padding:0px; margin:0px; color:white;" href="{{url_for('front_page')}}">
+              Home
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar justify-content-end" style="list-style-type: none; padding:0px; margin:0px;">
+          <li style="padding-right:10px;">
+            <a class="btn btn-secondary end" role="button" href="{{url_for('login',signup='login')}}">User login</a>
+          </li>
+          <li style="padding-right:10px;">
+            <button type="button" id="sign_up_btn" class="btn btn-secondary end">Sign Up</button>
+          </li>
+          <li style="padding-right:10px;">
+            <button type="button" id="login_btn" class="btn btn-primary content-justify-start">Login</button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div>
+      <h1 id="title_card" class="display-1">Ticket Show - Admin</h1>
+    </div>
+    <div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% if category == 'success' %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% elif category == 'danger' %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    <form method="POST">
+      <div class="collapse show" id="login">
+        <div>
+          <label for="Email" class="col-form-label" style="color: gainsboro;">Email address</label>
+          <input type="email" class="form-control" name="Email" id="Email" placeholder="name@example.com" required>
+          <small>
+            <div id="email guide">
+              Enter a
+              <p id="Ema" style="display:inline;">valid email</p>
+            </div>
+          </small>
+          <label for="Password" class="col-form-label" style="color: gainsboro;">Password</label>
+          <input type="password" class="form-control" name="Password" id="Password" 
+            placeholder="Password1" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+          <small>
+            <div id="password_guide">
+              Password requires atleast 
+              <p id="ucase" style="display:inline;">1 Uppercase,</p>
+              <p id="lcase" style="display:inline;"> 1 lowercase,</p>
+              <p id="num" style="display:inline;"> 1 number,</p>
+              <p id="length" style="display:inline;">and atleast 8 characters.</p>
+            </div>
+          </small>
+        </div>
+        <div class="collapse {{'show' if signup == 'signup' }}" id="sign_up">
+          <label for="RePassword" class="col-form-label" style="color: gainsboro;">Re-enter Password</label>
+          <input type="password" class="form-control" name="RePassword" id="RePassword" placeholder="Password1">
+          <small>
+            <div id="password_match">
+            </div>
+          </small>
+        </div>
+        <div>
+          <input type="checkbox" class="form-check-input" id="VisibilityToggle" style="padding-top: 5px;">
+          <label class="form-check-label" for="VisibilityToggle">View Password</label>
+        </div>
+        <div style="position: absolute;">
+          <a href="#" id="toggle" style="top:10px;">New user? Sign Up</a>
+        </div>
+        <div style="position: absolute; right:0%;">
+          <br>
+          <input type="submit" class="btn btn-primary" value="Submit">
+        </div>
+        <div>
+          <input type="hidden"  name="request_type" id="request_type" value="" style="position:relative;">
+        </div>
+      </div>
+    </form>
+      
+
+
+
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script>
+      $(document).ready(function(){
+          if($("#sign_up").hasClass("show")){
+            $("#request_type").val("signup");
+            $("#toggle").text("Have account? Login");
+          }else{
+            $("#request_type").val("login");
+            $("#toggle").text("New user? sign up");
+          }
+          $("#login_btn").click(function(){  
+            if(($("#login").hasClass("collapsing"))||($("#sign_up").hasClass("collapsing"))){
+            } else if($("#sign_up").hasClass("show")){
+              $("#sign_up").collapse("hide");
+              $("#login").collapse("show");
+            } else{
+              if($("#login").hasClass("show")){
+                $("#login").collapse("hide");
+              }else{
+                $("#login").collapse("show");
+              }
+            }
+            $("#request_type").val("login");
+            $("sign_up").attr("required",false);
+            $("#toggle").text("New user? Sign Up");
+          })
+          $("#sign_up_btn").click(function(){  
+            if(($("#login").hasClass("collapsing"))||($("#sign_up").hasClass("collapsing"))){
+            } else if($("#sign_up").hasClass("show")){
+              $("#sign_up").collapse('hide');
+              $("#login").collapse('hide');    
+            } else if($("#login").hasClass("show")){
+              $("#sign_up").collapse('show');
+            } else{
+              $("#sign_up").addClass('show');//to make animation seem smooth(clashing animation)
+              $("#login").collapse('show');
+            }
+            $("#request_type").val("signup");
+            $("sign_up").attr("required",true);
+            $("#toggle").text("Have account? Login");
+          })
+          $("#toggle").click(function(){
+            if($("#sign_up").hasClass("show")){
+              $("#sign_up").collapse('hide');
+              $("#request_type").val("login");
+              $("sign_up").attr("required",false);
+              $("#toggle").text("New user? sign up");
+            } else {
+              $("#sign_up").collapse('show');
+              $("#request_type").val("signup");
+              $("sign_up").attr("required",true);
+              $("#toggle").text("Have account? Login");
+            }
+          })
+          /*visibility toggle*/
+          $("#VisibilityToggle").click(function(){  
+            if ($("#Password").attr('type') == "password") {
+              $("#Password").attr('type', 'text');
+              $("#RePassword").attr('type', 'text');
+            } else {
+              $("#Password").attr('type', 'password');
+              $("#RePassword").attr('type', 'password');
+            }
+          });
+
+          /*form validation UI*/
+          $("#Email").keyup(function(){
+            if ($("#Email").val().match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
+              $("#Ema").css("color","green");
+            } else{
+              $("#Ema").css("color","red");
+            }
+          });
+
+          $("#Password").keyup(function(){
+            if ($("#Password").val().match(/[a-z]/)){
+              $("#lcase").css("color","green");
+            } else{
+              $("#lcase").css("color","red");
+            }
+            if ($("#Password").val().match(/[A-Z]/)){
+              $("#ucase").css("color","green");
+            } else{
+              $("#ucase").css("color","red");
+            }
+            if ($("#Password").val().match(/[0-9]/)){
+              $("#num").css("color","green");
+            } else{
+              $("#num").css("color","red");
+            }
+            if ($("#Password").val().length>7){
+              $("#length").css("color","green");
+            } else{
+              $("#length").css("color","red");
+            }
+          });    
+          $("#RePassword").keyup(function(){
+            if ($("#Password").val()==$("#RePassword").val()){
+              $("#password_match").css("color","green");
+              $("#password_match").text("Passwords match");
+              $("#password_match").setCustomValidity("Passwords do not match");
+            } else{
+              $("#password_match").css("color","red");
+              $("#password_match").text("Passwords do not match")
+              $("#password_match").setCustomValidity("");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
