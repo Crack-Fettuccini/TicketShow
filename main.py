@@ -1,20 +1,18 @@
 import os
 from flask import Flask, request, render_template, redirect, url_for, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func, desc, update
+from sqlalchemy import func, desc
 from flask_bcrypt import Bcrypt
-from flask_login import  UserMixin, LoginManager, login_user, logout_user, current_user, login_required
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 import plotly.graph_objects as go
 import re
 from datetime import datetime, time, timedelta
 from pytz import timezone
-
+from models import db, User, Admin, Show, Rating, Request, Bookings
 current_dir = os.path.abspath(os.path.dirname(__file__))
 IST = timezone('Asia/Kolkata')
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(current_dir,"ticketshowdb.sqlite3")
 app.config["SECRET_KEY"]=os.environ['signed_cookie']
-db = SQLAlchemy()
 db.init_app(app)
 app.app_context().push()
 bcrypt=Bcrypt(app)
@@ -26,70 +24,6 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-  
-class User(db.Model, UserMixin):
-  __tablename__ = 'user'
-  user_id = db.Column(db.Integer, autoincrement=True, primary_key=True, nullable=False)
-  username = db.Column(db.String, nullable=False)
-  email = db.Column(db.String, unique=True, nullable=False)
-  password = db.Column(db.String, nullable=False)
-  level = db.Column(db.CHAR, nullable=False)
-  def get_id(self):
-    return (self.user_id)
-
-class Admin(db.Model):
-  __tablename__ = 'admin'
-  stage_id = db.Column(db.Integer,autoincrement=True, primary_key=True, nullable=False)
-  user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-  location = db.Column(db.String)
-  stage = db.Column(db.String, nullable=False)
-  seats = db.Column(db.Integer, nullable=False)
-
-class Show(db.Model):
-  __tablename__ = 'show'
-  user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-  stage_id = db.Column(db.Integer, db.ForeignKey("admin.stage_id"), nullable=False)
-  show_id = db.Column(db.Integer,autoincrement=True, primary_key=True, nullable=False)
-  starttime = db.Column(db.DateTime(timezone=True), nullable=False)
-  endtime = db.Column(db.DateTime(timezone=True), nullable=False)
-  stage = db.Column(db.String, nullable=False)
-  show = db.Column(db.String, nullable=False)
-  seats_left = db.Column(db.Integer, nullable=False)
-  cost = db.Column(db.Integer, nullable=False)
-  tags = db.Column(db.String, nullable=True)
-
-
-
-class Stats(db.Model):
-  __tablename__ = 'stats'
-  user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False, primary_key=True)
-  best_stage = db.Column(db.String, nullable=False)
-  time_fill_stage = db.Column(db.String, nullable=False)
-  best_show = db.Column(db.String, nullable=False)
-  time_fill_show = db.Column(db.String, nullable=False)
-  average_timefill_stage = db.Column(db.String, nullable=False)
-  average_timefill_show = db.Column(db.String, nullable=False)
-
-class Rating(db.Model):
-  __tablename__ = 'rating'
-  show = db.Column(db.String, db.ForeignKey('show.show'), primary_key=True, nullable=False)
-  rating = db.Column(db.Float, nullable=False)
-  stars = db.Column(db.Integer, nullable=False)
-  count = db.Column(db.Integer, nullable=False)
-
-class Request(db.Model):
-  __tablename__ = 'request'
-  email = db.Column(db.String, db.ForeignKey("user.email"), nullable=False, primary_key=True)
-
-class Bookings(db.Model):
-  __tablename__ = 'bookings'
-  booking_id = db.Column(db.Integer, nullable=False, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
-  show_id = db.Column(db.Integer, db.ForeignKey("show.show_id"), nullable=False)
-  show = db.Column(db.String, db.ForeignKey('show.show'), nullable=False)
-  cost = db.Column(db.Integer, nullable=False)
-  tickets = db.Column(db.Integer, nullable=False)
-  rating = db.Column(db.Integer, nullable=False)  
     
 
 emailregex=("^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -130,6 +64,7 @@ def approval(email):
       method = request.form.get('approval')
       if method=="REJECT":
         process_finished = db.session.query(Request).filter_by(email=email).first()
+        user = db.session.query(User).filter_by(email=email).first()
         flash(f"{user.email}'s request rejected.",'danger')
         db.session.delete(process_finished)
         db.session.commit()
