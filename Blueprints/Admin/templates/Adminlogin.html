@@ -1,0 +1,7 @@
+{% extends "login.html"%}
+{% block switch_login_btn %}
+<a class="btn btn-secondary end" role="button" href="{{url_for('login.login',signup='login')}}">User login</a>
+{% endblock %}
+{% block user_type%}
+<h1 id="title_card" class="display-1">Ticket Show-Admin</h1>
+{% endblock %}

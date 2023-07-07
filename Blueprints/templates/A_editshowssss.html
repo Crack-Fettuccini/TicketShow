@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>Active sales&#x2022TicketShow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+     <style>
+      #title_card {
+        position: static;
+        text-align: center;
+        font-weight:200;
+      }
+
+      .form {
+        border-radius: 25px;
+        background: #73AD21;
+        padding: 20px; 
+        width: 200px;
+        height: 150px;  
+      }
+
+      #shows {
+        position: absolute;
+        left: 15px;
+        right: 15px;
+        margin: auto;  
+      }
+      .c-container {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 18rem;
+      height: 20rem;
+      display: inline-block;
+    }
+
+    .new-container {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 18rem;
+      height: 20rem;
+      display: inline-block;
+    }
+
+    .new-container {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 18rem;
+      height: 20rem;
+      display: inline-block;
+    }
+
+    .card {
+      border-radius: 20%;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s;
+    }
+    .c-card {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 100%;
+      height: 10%;
+      display: inline-block;
+      position: relative;
+      margin-bottom:20px;
+    }
+    .card-buttons{
+      position:relative;
+      bottom: 0;
+    }
+    .front,
+    .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow:hidden;
+    }
+
+    .front {
+      border-radius: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotateY(0deg);
+    }
+
+    .back {
+      border-radius: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotateY(180deg) translateZ(1px); /* Combine transformations */
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .c-container:hover .card {
+      transform: rotateY(180deg);
+    }
+
+  .zoomable-card {
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .zoomable-card.zoomed {
+  transform: translate(-50%, -50%) rotateY(180deg);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+}
+.new-container.fullscreen {
+  transform: translate(-50%, -50%);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+}
+
+    </style>
+  </head>
+    <body>
+      <nav class="navbar" style="background-color: #111417; border-bottom: 1px solid #303539;" >
+        <div class="container-fluid">
+          <ul class="navbar justify-content-start">
+            <li>
+              <a class="nav-link justify-content-start fs-5" style="position:absolute; left:10px; top:10px; padding:0px; margin:0px; color:white;" href="{{url_for('admin.Dashboard')}}">
+                <img src="{{ url_for('static', filename='ticket-48.png') }}" width="40" height="40" style="border-width:0px;"></img>
+              </a>
+              <a class="nav-link justify-content-start fs-5" style="position:absolute; left:53px; top:22px; padding:0px; margin:0px; color:white;" href="{{url_for('admin.Dashboard')}}">
+                Home
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar justify-content-end" style="list-style-type: none; padding:0px; margin:0px;">
+            <li style="padding-right:10px;">
+            </li>
+            <li style="padding-right:10px;">
+              <a href="{{ url_for('login.logout') }}" type="button" id="logout_btn" class="btn btn-primary end" onclick="return confirm('Do you want to logout.')">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    <div>
+    <div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% if category == 'success' %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% elif category == 'danger' %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    <div id="shows">
+      <div class="flex-container">
+        <h1 id="title_card" class="display-5">Shows currently on sale in {{stage}}</h1>
+        <div class="flex-row justify-content-center g-3">
+          {% for event in events %}
+            <div class="c-container container col-sm-12 col-md-6 col-lg-3 col-xl-3">
+              <div class="card">
+                <div class="front">
+                  <div class="card-body" style=" text-align: center;">
+                    <h3 class="card-title">{{event.show}}</h3>
+                    <br>
+                    <div style="font-weight: bold;">Starts at</div>
+                    <div>{{event.starttime}}</div>
+                    <div style="font-weight: bold;">Ends at</div>
+                    <div>{{event.endtime}}</div>
+                    <br>
+                    <div style="font-weight: bold;">Cost of ticket for one</div>
+                    <div>Rs.{{event.cost}}</div>
+                    <div style="font-weight: bold;">Vacancies</div>
+                    <div>{{event.seats_left}}</div>
+                  </div>
+                </div>
+                <div class="back">
+                  <br>
+                  <h5 style="margin: -5%;white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Edit {{event.show}}</h5>
+                  <div class="card-body" style="padding-top:0; margin-top: 0;">
+                    <form method="POST" id="form-{{event.show_id}}" action="{{ url_for('admin.edit_show', show_id=event.show_id) }}">
+                      <label for="Venue" class="col-form-label" style="color: gainsboro;">Venue</label>
+                      <select type="text" class="form-control" name="Venue" id="Venue" list="Venues" value="{{event.stage}}" required>
+                        {% for i in venues %}
+                        <option value="{{i.stage_id}}"{% if venue==i.stage_id %} selected{% endif %}>{{i.stage}} in {{i.location}}</option>
+                        {% endfor %}
+                      </select>
+                      <label hidden for="Show" class="col-form-label" style="color: gainsboro;">Show</label>
+                      <input hidden type="text" class="form-control" name="Show" id="Show" placeholder="Enter show name" value="{{event.show}}" disabled>                    
+                      <label hidden for="start" class="col-form-label" style="color: gainsboro;">Start time</label>
+                      <input hidden type="datetime-local" class="form-control" name="start" id="start" value="{{event.starttime}}" placeholder="dd-mm-yyyy  --:-- --" disabled>
+                      <label hidden for="end" class="col-form-label" style="color: gainsboro;">End time</label>
+                      <input hidden type="datetime-local" class="form-control" name="end" id="end" value="{{event.endtime}}" placeholder="dd-mm-yyyy  --:-- --" disabled>
+                      <label for="cost" class="col-form-label" style="color: gainsboro;">Cost per ticket</label>
+                      <input type="number" class="form-control" name="cost" id="cost" min="0" value="{{event.cost}}" required>
+                      <label for="Genre" class="col-form-label" style="color: gainsboro;">Tags</label>
+                      <select type="text" class="form-select" name="Genre" id="Genre" placeholder="Genre" required>
+                        <option value="" selected  {% if event.tags=='' %} selected{% endif %} disabled hidden>Genre</option>
+                        <option value="Thriller" {% if event.tags=='Thriller' %} selected{% endif %}>Thriller</option>
+                        <option value="Romance"  {% if event.tags=='Romance' %} selected{% endif %} >Romance</option>
+                        <option value="Comedy"   {% if event.tags=='Comedy' %} selected{% endif %}>Comedy</option>
+                        <option value="Horror"   {% if event.tags=='Horror'%} selected{% endif %}>Horror</option>
+                        <option value="Action"   {% if event.tags=='Action' %} selected{% endif %}>Action</option>
+                        <option value="Drama"    {% if event.tags=='Drama' %} selected{% endif %}>Drama</option>
+                      </select>
+                    </form>
+                    <form action="{{ url_for('admin.delete_show', show_id=event.show_id) }}" id="delete-{{event.show_id}}" method="POST">
+                      <input type="hidden" name="_method" value="DELETE">
+                    </form>
+                  </div>
+                  <div class="btn-group w-100">
+                    <button type="submit" style="text-align:right;" form="delete-{{event.show_id}}"class="btn btn-danger" onclick="return confirm('Do you want to delete this show?\n You cannot reverse this process.')">Delete</button>
+                    <a class="btn btn-warning" href="{{url_for('admin.editshows',stage_id=stage_id)}}" role="button">Cancel</a>
+                    <button type="submit" style="text-align:left;" form="form-{{event.show_id}}" class="btn btn-success">Update</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          <div class="container new-container col-sm-12 col-md-6 col-lg-3 col-xl-3">
+            <div class="card border-0 zoomable-card">
+              <div class="front">
+                <div class="card-body" style="display:flex; align-items: center; justify-content: center;">
+                  <h5 class="card-title" style="font-size:100px;">&CirclePlus;</h5>
+                </div>
+              </div>
+              <div class="back">
+                <div class="card-body" style="text-align: center;">
+                  <form method="POST" action="{{url_for('admin.newshow')}}>
+                    <div id="shows">
+                      <label for="Venue" class="col-form-label" style="color: gainsboro;">Venue</label>
+                      <select type="text" class="form-select" name="Venue" id="Venue" required>
+                        <option value="" selected disabled hidden>Venue</option>
+                        {% for i in venues %}
+                        <option value="{{i.stage_id}}">{{i.stage}} in {{i.location}}</option>
+                        {% endfor %}
+                      </select>
+                      <label for="Show" class="col-form-label" style="color: gainsboro;">Show</label>
+                      <input type="text" class="form-control" name="Show" id="Show" placeholder="Enter show name" required>
+                      <label for="start" class="col-form-label" style="color: gainsboro;">Start time</label>
+                      <input type="datetime-local" class="form-control" name="start" id="start" placeholder="dd-mm-yyyy  --:-- --" required>
+                      <label for="end" class="col-form-label" style="color: gainsboro;">End time</label>
+                      <input type="datetime-local" class="form-control" name="end" id="end" placeholder="dd-mm-yyyy  --:-- --" required>
+                      <label for="cost" class="col-form-label" style="color: gainsboro;">Cost per ticket</label>
+                      <input type="number" class="form-control" name="cost" id="cost" min="0" required>
+                      <label for="Genre" class="col-form-label" style="color: gainsboro;">Tags</label>
+                      <select type="text" class="form-select" name="Genre" id="Genre" required>
+                        <option value="" selected disabled hidden>Genre</option>
+                        <option value="Thriller">Thriller</option>
+                        <option value="Romance">Romance</option>
+                        <option value="Comedy">Comedy</option>
+                        <option value="Horror">Horror</option>
+                        <option value="Action">Action</option>
+                        <option value="Drama">Drama</option>
+                      </select>
+                      <div style="position: absolute; right:0%;">
+                        <br>
+                        <a class="btn btn-danger" href="{{url_for('admin.Dashboard')}}" role="button">Cancel</a>
+                        <input type="submit" class="btn btn-primary" value="Submit">
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a type="button" id="add_show" class="btn btn-success"  href="{{url_for('admin.newshow')}}">Add New Show</a>
+        <a type="button" id="edit_venue" class="btn btn-danger"  href="{{url_for('admin.Dashboard')}}">Cancel</a>  
+      </div>
+    </div>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const zoomableCard = document.querySelector('.zoomable-card');
+      const newContainer = document.querySelector('.new-container');
+  
+      zoomableCard.addEventListener('click', function() {
+        zoomableCard.classList.toggle('zoomed');
+        newContainer.classList.toggle('fullscreen');
+      });
+    });
+  </script>
+  
+  
+</body>
+</html>
