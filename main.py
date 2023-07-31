@@ -1,8 +1,8 @@
-from Blueprints.Index.Index import index_bp
-from Blueprints.Admin.Admin import admin_bp
-from Blueprints.Login.Login import login_bp
-from Blueprints.User.User import user_bp
-from Blueprints import app
+from Ticket_Show.Index.Index import index_bp
+from Ticket_Show.Admin.Admin import admin_bp
+from Ticket_Show.Login.Login import login_bp
+from Ticket_Show.User.User import user_bp
+from Ticket_Show import app
 
 app.register_blueprint(index_bp, url_prefix=  "/")
 app.register_blueprint(login_bp, url_prefix=  "/Login")
