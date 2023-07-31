@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>New Show&#x2022TicketShow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+
+    <style>
+      #title_card {
+        position: static;
+        text-align: center;
+        margin-top:3%;
+        font-weight:200;
+      }
+
+      .form {
+        border-radius: 25px;
+        background: #73AD21;
+        padding: 20px; 
+        width: 200px;
+        height: 150px;  
+      }
+      
+      @media (orientation: landscape){
+        #shows {
+          position: absolute;
+          left: 35%;
+          right: 35%;
+          margin: auto;  
+        }
+      }
+
+      @media (orientation: portrait){
+        #shows {
+          position: absolute;
+          left: 35px;
+          right: 35px;
+          margin: auto;  
+        }
+      }
+        
+    </style>
+  </head>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+  <body>
+    <nav class="navbar" style="background-color: #111417; border-bottom: 1px solid #303539;" >
+      <div class="container-fluid">
+        <ul class="navbar justify-content-start">
+          <li>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:10px; top:10px; padding:0px; margin:0px; color:white;" href="{{url_for('admin.Dashboard')}}">
+              <img src="{{ url_for('static', filename='ticket-48.png') }}" width="40" height="40" style="border-width:0px;"></img>
+            </a>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:53px; top:22px; padding:0px; margin:0px; color:white;" href="{{url_for('admin.Dashboard')}}">
+              Home
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar justify-content-end" style="list-style-type: none; padding:0px; margin:0px;">
+          <li style="padding-right:10px;">
+            <a href="{{ url_for('login.logout') }}" type="button" id="logout_btn" class="btn btn-primary end" onclick="return confirm('Do you want to logout.')">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div>
+      <h1 id="title_card" class="display-5">New Show</h1>
+    </div>
+    <div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% if category == 'success' %}
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% elif category == 'danger' %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    <form method="POST">
+        <div id="shows">
+          <label for="Venue" class="col-form-label" style="color: gainsboro;">Venue</label>
+          <select type="text" class="form-select" name="Venue" id="Venue" required>
+            <option value="" selected disabled hidden>Venue</option>
+            {% for i in venues %}
+            <option value="{{i.stage_id}}">{{i.stage}} in {{i.location}}</option>
+            {% endfor %}
+          </select>
+          <label for="Show" class="col-form-label" style="color: gainsboro;">Show</label>
+          <input type="text" class="form-control" name="Show" id="Show" placeholder="Enter show name" required>
+          <label for="start" class="col-form-label" style="color: gainsboro;">Start time</label>
+          <input type="datetime-local" class="form-control" name="start" id="start" placeholder="dd-mm-yyyy  --:-- --" required>
+          <label for="end" class="col-form-label" style="color: gainsboro;">End time</label>
+          <input type="datetime-local" class="form-control" name="end" id="end" placeholder="dd-mm-yyyy  --:-- --" required>
+          <label for="cost" class="col-form-label" style="color: gainsboro;">Cost per ticket</label>
+          <input type="number" class="form-control" name="cost" id="cost" min="0" required>
+          <label for="Genre" class="col-form-label" style="color: gainsboro;">Tags</label>
+          <select type="text" class="form-select" name="Genre" id="Genre" required>
+            <option value="" selected disabled hidden>Genre</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Romance">Romance</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Horror">Horror</option>
+            <option value="Action">Action</option>
+            <option value="Drama">Drama</option>
+          </select>
+        <div style="position: absolute; right:0%;">
+          <br>
+          <a class="btn btn-danger" href="{{url_for('admin.Dashboard')}}" role="button">Cancel</a>
+          <input type="submit" class="btn btn-primary" value="Submit">
+        </div>
+      </div>
+    </form>
+  </body>
+</html>

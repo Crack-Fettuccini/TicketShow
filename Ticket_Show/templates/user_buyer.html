@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>Dashboard&#x2022TicketShow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+     <style>
+      #title_card {
+        position: static;
+        text-align: center;
+        margin-top:3%;
+        font-weight:200;
+      }
+
+      .form {
+        border-radius: 25px;
+        background: #73AD21;
+        padding: 20px;
+        width: 200px;
+        height: 150px;
+      }
+
+      #shows {
+        margin-top: 50px;
+      }
+    .c-container {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 18rem;
+      height: 20rem;
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fade-in .5s ease-in-out forwards;
+    }
+
+    .card {
+      border-radius: 20%;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.8s;
+    }
+    .c-card {
+      border-radius: 20%;
+      perspective: 1000px;
+      width: 100%;
+      height: 10%;
+      display: inline-block;
+      position: relative;
+      margin-bottom:20px;
+    }
+
+    .front,
+    .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow:hidden;
+    }
+
+    .front {
+      border-radius: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotateY(0deg);
+    }
+
+    .back {
+      border-radius: 20%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotateY(180deg) translateZ(1px); /* Combine transformations */
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .c-container:hover .card {
+      transform: rotateY(180deg);
+    }
+
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    </style>
+  </head>
+    <body>
+      <nav class="navbar" style="background-color: #111417; border-bottom: 1px solid #303539;" >
+      <div class="container-fluid">
+        <ul class="navbar justify-content-start">
+          <li>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:10px; top:10px; padding:0px; margin:0px; color:white;" href="{{url_for('user.Dashboard')}}">
+              <img src="{{ url_for('static', filename='ticket-48.png') }}" width="40" height="40" style="border-width:0px;"></img>
+            </a>
+            <a class="nav-link justify-content-start fs-5" style="position:absolute; left:53px; top:22px; padding:0px; margin:0px; color:white;" href="{{url_for('user.Dashboard')}}">
+              Home
+            </a>
+          </li>
+        </ul>
+        <ul class="navbar justify-content-end" style="list-style-type: none; padding:0px; margin:0px;">
+          <li style="padding-right:10px;">
+            <a href="{{ url_for('user.booked') }}" type="button" id="booked" class="btn btn-secondary end">Booked Tickets</a>
+          </li>
+          <li style="padding-right:10px;">
+            <a href="{{ url_for('user.editprofile') }}" type="button" id="booked" class="btn btn-secondary end">Edit profile</a>
+          </li>
+          <li style="padding-right:10px;">
+            <a href="{{ url_for('login.logout') }}" type="button" id="logout_btn" class="btn btn-primary end" onclick="return confirm('Do you want to logout?')">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div>
+      <h1 class="display-7">Welcome, {{ current_user.username }}!</h1>
+    </div>
+    <div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {% if category == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          {% elif category == 'danger' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    </div>
+    <h1 id="title_card" class="display-7">Shows currently on sale</h1>
+    <form id='Filter' method="POST">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="ratingfilter">Filter By Rating</label>
+            <select class="form-control" id="ratingfilter" name="ratingfilter" onchange="document.getElementById('Filter').submit();">
+              <option value="1" {% if session['rating']=='1' %} selected {% endif %}>&gt1</option>
+              <option value="2" {% if session['rating']=='2' %} selected {% endif %}>&gt2</option>
+              <option value="3" {% if session['rating']=='3' %} selected {% endif %}>&gt3</option>
+              <option value="4" {% if session['rating']=='4' %} selected {% endif %}>&gt4</option>
+              <option value="5" {% if session['rating']=='5' %} selected {% endif %}>&gt5</option>
+              <option value="None" {% if session['rating']=='None' %} selected {% endif %}>None</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="locationfilter">Filter by location</label>
+            <select class="form-control" id="locationfilter" name="locationfilter" onchange="document.getElementById('Filter').submit();">
+              {%for Location in Locations%}
+              <option value="{{Location}}" {% if session['location']==Location %} selected {% endif %}>{{Location}}</option>
+              {% endfor %}
+              <option value="None" {% if session['location']=='None' %} selected {% endif %}>None</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="ratingfilter">Filter By Tags</label>
+            <select class="form-control" id="tagsfilter" name="tagsfilter" onchange="document.getElementById('Filter').submit();">
+              <option value="None" selected  {% if tags=='' %} selected{% endif %}>None</option>
+              <option value="Thriller" {% if session['tags']=='Thriller' %} selected{% endif %}>Thriller</option>
+              <option value="Romance"  {% if session['tags']=='Romance' %} selected{% endif %} >Romance</option>
+              <option value="Comedy"   {% if session['tags']=='Comedy' %} selected{% endif %}>Comedy</option>
+              <option value="Horror"   {% if session['tags']=='Horror'%} selected{% endif %}>Horror</option>
+              <option value="Action"   {% if session['tags']=='Action' %} selected{% endif %}>Action</option>
+              <option value="Drama"    {% if session['tags']=='Drama' %} selected{% endif %}>Drama</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="datefilter">Filter By Date</label>
+            <input type="date" class="form-control" id="datefilter" name="datefilter" value="{{session['date']}}">
+          </div>
+        </div>
+      </div>
+    </form>
+    <div class="accordion accordion-flush" id="accordionlocations">
+      {% set unique_locations = [] %}
+      {% for showout,ratingout,locationout in events %}
+        {% if locationout not in unique_locations %}
+          {% set _ = unique_locations.append(locationout) %}
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{locationout}}">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#collapse{{locationout}}" aria-expanded="true" aria-controls="collapse{{locationout}}">
+                {{locationout}}
+              </button>
+            </h2>
+            <div id="collapse{{locationout}}" class="accordion-collapse collapse" aria-labelledby="heading{{locationout}}" data-bs-parent="#accordionlocations">
+              <div class="accordion-body">
+                {% set unique_stages = [] %}
+                {% set count = namespace(value=0) %}
+                {% for showmid,ratingmid,locationmid in events %}
+                  {% if locationout==locationmid %}
+                  {% set _ = unique_stages.append(showmid.stage) %}
+                    <div class="accordion" id="accordionshows{{locationout}}">
+                      <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{showmid.stage}}{{locationout}}">
+                          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{showmid.stage}}{{locationout}}" aria-expanded="true" aria-controls="collapse{{showmid.stage}}{{locationout}}">
+                            {{showmid.stage}}
+                          </button>
+                        </h2>
+                        <div id="collapse{{showmid.stage}}{{locationout}}" class="accordion-collapse collapse" aria-labelledby="heading{{showmid.stage}}{{locationout}}" data-bs-parent="#accordionshows{{locationout}}">
+                          <div class="accordion-body">
+                            {% for showin,ratingin,locationin in events %}
+                            <div class="c-container container col-sm-12 col-md-6 col-lg-3 col-xl-3" style="animation-delay: {{ count.value }}s;">
+                              <div class="card">
+                                <div class="front">
+                                  <div class="card-body" style="text-align: center;">
+                                    <h5>{{showin.show}}</h5>
+                                    <div>show starts at:</div>
+                                    <div>{{showin.starttime}}</div>
+                                    <div>show ends at:</div>
+                                    <div>{{showin.endtime}}</div>
+                                    <div>Cost per Ticket</div>
+                                    <div>{{showin.cost}}</div>
+                                    <div>Seats left:</div>
+                                    <div>{{showin.seats_left}}</div>
+                                    <div>Ratings:</div>
+                                    <div class="stars" data-label="{{ratingin}}">{{ratingin}}</div>
+                                  </div>
+                                </div>
+                                <div class="back">
+                                  <br>
+                                  <h5 class="card-title" style="text-align: center;">
+                                    <div>Book Tickets</div>
+                                    <div style="margin: -5%;white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"> {{showin.show}}</div>
+                                  </h5>
+                                  <div class="card-body w-100">
+                                    <form method="POST" id="book" action="{{url_for('user.book',show_id=showin.show_id)}}">
+                                      <div>Cost per ticket:{{showin.cost}}</div>
+                                      <div>Seats Available:{{showin.seats_left}}</div>
+                                      <label for="bookingSeats" class="col-form-label" style="color: gainsboro; padding-right: 40px;">Number of tickets to book?</label>
+                                      <input type="number" class="form-control" id="bookingSeats" name="bookingSeats" min="1" value="1" oninput="updateCost()">
+                                      <p id="totalcost">The total cost of 1 seat is {{ showin.cost }}.</p>
+                                      <div class="btn-group w-100" style="bottom: 0; text-align: center; width: 150%;">
+                                        <a class="btn btn-danger" href="{{url_for('user.Dashboard')}}" role="button">Cancel</a>
+                                        <input type="submit" class="btn btn-success" value="Book">
+                                      </div>
+                                    </form>
+                                
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {%set count.value = count.value + 0.1%}
+                  {% endif %}
+                {% endfor%}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script>
+      const filter = document.getElementById('datefilter');
+      filter.addEventListener('change', event => {
+        document.getElementById('Filter').submit();
+      });
+
+      function transformToStars(label) {
+
+        if (label=="1") {
+            return "&#11089 &#11090 &#11090 &#11090 &#11090";
+        } else if (label=="2") {
+            return "&#11089 &#1189 &#11090 &#11090 &#11090";
+        } else if (label=="3") {
+            return "&#11089 &#11089 &#11089 &#11090 &#11090";
+        } else if (label=="4") {
+            return "&#11089 &#11089 &#11089 &#11089 &#11090";
+        } else if (label=="5") {
+            return "&#11089 &#11089 &#11089 &#11089 &#11089";
+        } else {
+          return "-";
+        }
+      }
+
+      var containers = document.getElementsByClassName("stars");
+
+      for (var i = 0; i < containers.length; i++) {
+          var container = containers[i];
+          var label = container.getAttribute("data-label");
+          container.textContent = transformToStars(label);
+      };
+      function updateCost() {
+        var bookingSeats = document.getElementById("bookingSeats").value;
+        var cost = document.getElementById("cost").value;
+        var totalcost = bookingSeats * cost;
+        if (bookingSeats == 1){
+          seat='seat';
+        } else {
+          seat = 'seats';
+        };
+        document.getElementById("totalcost").innerHTML = "The total cost of " + bookingSeats + " " + seat + " is Rs." + totalcost + ".";
+      };
+      </script>
+  </body>
+</html>
